@@ -17,10 +17,7 @@ app.get('/api/employees', (req, res) => {
     }
 
     if (req.query.badges) {
-        const badgesToFilter = req.query.badges.split(','); // Permite varios badges separados por coma
-        result = result.filter(employee =>
-            badgesToFilter.every(badge => employee.badges.includes(badge))
-        );
+        result = result.filter(employee => employee.badges.includes(req.query.badges));
     }
 
     if (req.query.page) {
@@ -33,7 +30,6 @@ app.get('/api/employees', (req, res) => {
 
     res.json(result);
 });
-
 
 app.get('/api/employees/oldest', (req, res) => {
     const ages = employees.map(({ age }) => age);
