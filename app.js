@@ -7,39 +7,39 @@ const app = express();
 
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.json({ message: 'Hello World'});
+app.get('/api/employees', (req, res) => {
+    let result = [...employees];
+
+    if (req.query.user) {
+        result = req.query.user === 'true'
+            ? result.filter(employee => employee.privileges === 'user')
+            : result.filter(employee => employee.privileges === 'admin');
+    }
+
+    if (req.query.badges) {
+        const badgesToFilter = req.query.badges.split(','); // Permite varios badges separados por coma
+        result = result.filter(employee =>
+            badgesToFilter.every(badge => employee.badges.includes(badge))
+        );
+    }
+
+    if (req.query.page) {
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = 2;
+        const pageStart = pageSize * (page - 1);
+        const pageEnd = pageStart + pageSize;
+        result = result.slice(pageStart, pageEnd);
+    }
+
+    res.json(result);
 });
 
-app.get('/api/employees', (req, res) => {
-    res.json(employees);
-});
-
-app.get('/api/employees', (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const pageSize = 2;
-    const pageStart = pageSize * (page - 1);
-    const pageEnd = pageStart + pageSize;
-    const filteredByPage = employees.slice(pageStart, pageEnd);
-    res.json(filteredByPage);
-});
 
 app.get('/api/employees/oldest', (req, res) => {
     const ages = employees.map(({ age }) => age);
     const maxAge = Math.max(...ages);
     const employeeMaxAge = employees.find((employee) => employee.age === maxAge);
     res.json(employeeMaxAge);
-});
-
-
-app.get('/api/employees', (req, res) => {
-    const employeesFiltered = req.query.user === 'true' ? employees.filter((employee) => employee.privileges === 'user') : employees.filter((employee) => employee.privileges === 'admin');
-    res.json(employeesFiltered);
-});
-
-app.get('/api/employees', (req, res) => {
-    const filteredEmployeesByBadges = employees.filter(({ badges }) => badges.includes(req.query.badges))
-    res.json(filteredEmployeesByBadges);
 });
 
 app.get('/api/employees/:name', (req, res) => {
